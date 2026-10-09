@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Football World Cup 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #080f1e;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .font-teko {
+            font-family: 'Teko', sans-serif;
+        }
+
+        /* Responsive Pitch Wrapper - High Quality Colorful Stadium Atmosphere */
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 35%, #0f172a 0%, #090d16 60%, #020408 100%);
+            overflow: hidden;
+        }
+
+        /* Ambient Stadium Floodlight Glow behind Canvas */
+        #game-container::before {
+            content: '';
+            position: absolute;
+            inset: -10%;
+            background: 
+                radial-gradient(circle at 10% 10%, rgba(250, 204, 21, 0.28) 0%, transparent 45%),
+                radial-gradient(circle at 90% 10%, rgba(34, 211, 238, 0.28) 0%, transparent 45%),
+                radial-gradient(circle at 10% 90%, rgba(236, 72, 153, 0.22) 0%, transparent 45%),
+                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.22) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 60%);
+            pointer-events: none;
+            filter: blur(20px);
+        }
+
+        canvas {
+            display: block;
+            box-shadow: 0 0 60px rgba(16, 185, 129, 0.35), 0 0 100px rgba(6, 182, 212, 0.2), 0 30px 70px rgba(0, 0, 0, 0.95);
+            border-radius: 20px;
+        }
+
+        /* Glassmorphism UI Components */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #facc15 0%, #eab308 50%, #ca8a04 100%);
+            color: #0b1329;
+            font-weight: 900;
+            text-transform: uppercase;
+            box-shadow: 0 8px 25px -4px rgba(234, 179, 8, 0.5), inset 0 2px 0 rgba(255,255,255,0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 12px 30px -2px rgba(234, 179, 8, 0.7);
+        }
+
+        .btn-gold:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        /* Goal Banner Animation */
+        .banner-pop {
+            animation: bannerPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes bannerPop {
+            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+            70% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.0); opacity: 1; }
+        }
+
+        /* Pulse highlight for turn active */
+        .active-turn-glow {
+            box-shadow: 0 0 20px rgba(234, 179, 8, 0.8);
+            border-color: #facc15 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Main Game Canvas -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Goal / Banner Event Overlay -->
+        <div id="status-banner" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none hidden text-center">
+            <h1 id="banner-text" class="font-teko text-8xl md:text-9xl font-black italic tracking-wider drop-shadow-[0_10px_25px_rgba(0,0,0,0.9)] uppercase text-yellow-400">
+                GOAL!
+            </h1>
+            <p id="banner-subtext" class="text-xl md:text-2xl font-black text-white tracking-widest uppercase -mt-4 drop-shadow-md">
+                WHAT A MAGNIFICENT STRIKE!
+            </p>
+        </div>
+
+        <!-- HUD Scoreboard Overlay -->
+        <div id="hud-overlay" class="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-3 md:p-6 hidden">
+            <!-- Top Score Bar -->
+            <div class="flex justify-between items-center w-full max-w-4xl mx-auto pointer-events-auto">
+                <!-- Player 1 Card (Real Country Flag Badge) -->
+                <div id="p1-card" class="glass-panel rounded-2xl px-4 py-2 flex items-center gap-3 transition-all">
+                    <div id="p1-badge" class="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-yellow-400 bg-slate-900 flex items-center justify-center overflow-hidden shadow-md shrink-0">
+                        <img id="p1-flag-img" src="https://flagcdn.com/w160/mx.png" alt="Flag" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <div id="p1-name" class="text-xs md:text-sm font-black text-gray-200 uppercase tracking-wider">MEXICO</div>
+                        <div class="text-[10px] font-bold text-yellow-400 tracking-widest uppercase">TEAM 1</div>
+                    </div>
+                </div>
+
+                <!-- Match Score Center -->
+                <div class="glass-panel px-6 py-2 rounded-2xl text-center border-yellow-400/40">
+                    <div class="text-[10px] font-bold text-yellow-400 tracking-widest uppercase">MATCH TIME: <span id="match-clock-text" class="text-white font-extrabold">20:00</span></div>
+                    <div class="font-teko text-4xl md:text-5xl font-black text-white leading-none tracking-wider my-0.5">
+                        <span id="score-p1" class="text-yellow-400">0</span> <span class="text-gray-500 font-light">-</span> <span id="score-p2" class="text-cyan-400">0</span>
+                    </div>
+                    <div id="timer-text" class="text-xs font-black text-green-400 tracking-wider uppercase">TURN: 15s</div>
+                </div>
+
+                <!-- Player 2 Card (Real Country Flag Badge) -->
+                <div id="p2-card" class="glass-panel rounded-2xl px-4 py-2 flex items-center gap-3 flex-row-reverse transition-all">
+                    <div id="p2-badge" class="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-cyan-400 bg-slate-900 flex items-center justify-center overflow-hidden shadow-md shrink-0">
+                        <img id="p2-flag-img" src="https://flagcdn.com/w160/za.png" alt="Flag" class="w-full h-full object-cover">
+                    </div>
+                    <div class="text-right">
+                        <div id="p2-name" class="text-xs md:text-sm font-black text-gray-200 uppercase tracking-wider">SOUTH AFRICA</div>
+                        <div class="text-[10px] font-bold text-cyan-400 tracking-widest uppercase">TEAM 2 (VERY HARD AI)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Controls & Turn Indicator -->
+            <div class="flex justify-between items-end w-full max-w-4xl mx-auto pointer-events-auto">
+                <button class="glass-panel px-4 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white transition-all uppercase tracking-wider flex items-center gap-2" onclick="openMenu()">
+                    ⚙️ MENU
+                </button>
+                <div id="turn-guide-text" class="bg-black/70 backdrop-blur-md px-5 py-2 rounded-full border border-white/20 text-xs font-black text-yellow-400 uppercase tracking-widest shadow-xl">
+                    DRAG PUCK BACK & RELEASE TO SHOOT
+                </div>
+                <button class="glass-panel px-4 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white transition-all uppercase tracking-wider flex items-center gap-2" onclick="restartMatch()">
+                    🔄 RESTART
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Menu Modal -->
+        <div id="main-menu" class="absolute inset-0 z-20 flex flex-col justify-center items-center p-4 md:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto">
+            <div class="text-center max-w-lg w-full mx-auto my-auto flex flex-col items-center">
+                <!-- Action Stadium Image Hero Setup -->
+                <div class="relative w-full rounded-3xl overflow-hidden border-2 border-yellow-400/50 shadow-[0_0_50px_rgba(250,204,21,0.3)] mb-6 group bg-slate-900">
+                    <img 
+                        src="football.png" 
+                        alt="Football World Cup Action Shot" 
+                        class="w-full h-64 sm:h-80 md:h-96 object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
+                        onerror="this.onerror=null; this.src='football_2.png';"
+                    />
+                    <!-- Overlay Banner with World Cup Title -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex flex-col justify-end p-6 text-left">
+                        <div>
+                            <h1 class="font-teko text-6xl md:text-7xl font-black italic leading-none text-white tracking-wide drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] uppercase">
+                                FOOTBALL <span class="text-yellow-400">WORLD CUP</span>
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Game Action Button -->
+                <div class="flex flex-col gap-3.5 w-full max-w-xs mx-auto">
+                    <button class="btn-gold py-4 rounded-2xl text-lg tracking-wider font-black flex items-center justify-center gap-3 shadow-xl" onclick="openNationSelect()">
+                        <span>🏆 WORLD CUP (SELECT NATIONS)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Select Your Nation Modal (World Cup Groups A to Z) -->
+        <div id="nation-select-menu" class="absolute inset-0 z-20 flex flex-col justify-between items-center p-4 md:p-6 bg-[#022e8a] hidden select-none overflow-y-auto">
+            <!-- Header -->
+            <div class="text-center w-full max-w-lg mt-2">
+                <h1 class="font-teko text-5xl md:text-6xl font-black text-white tracking-wider uppercase drop-shadow-md">
+                    SELECT YOUR NATIONS
+                </h1>
+                <p class="text-xs font-bold text-yellow-300 uppercase tracking-widest -mt-1 mb-2">
+                    CLICK ANY 2 TEAMS TO MATCH UP IN THE WORLD CUP
+                </p>
+                <button onclick="shuffleGroups()" class="mt-1 border-2 border-yellow-400 text-yellow-400 font-extrabold text-xs px-5 py-1.5 rounded-full hover:bg-yellow-400/20 active:scale-95 transition-all uppercase tracking-wider">
+                    SHUFFLE GROUPS
+                </button>
+            </div>
+
+            <!-- Group Navigation Carousel -->
+            <div class="flex items-center justify-between w-full max-w-sm my-2 px-4">
+                <button onclick="prevGroup()" class="w-10 h-10 rounded-full bg-[#0d3b9e] border border-blue-400/30 text-yellow-400 font-black text-xl flex items-center justify-center hover:bg-blue-600 active:scale-90 transition-all shadow-md">
+                    ❮
+                </button>
+                <span id="group-title" class="font-teko text-3xl md:text-4xl font-black text-yellow-400 tracking-widest uppercase">
+                    GROUP A
+                </span>
+                <button onclick="nextGroup()" class="w-10 h-10 rounded-full bg-[#0d3b9e] border border-blue-400/30 text-yellow-400 font-black text-xl flex items-center justify-center hover:bg-blue-600 active:scale-90 transition-all shadow-md">
+                    ❯
+                </button>
+            </div>
+
+            <!-- 2x2 Nation Grid -->
+            <div id="nation-grid" class="grid grid-cols-2 gap-3.5 w-full max-w-md my-auto px-2">
+                <!-- Rendered dynamically via JavaScript -->
+            </div>
+
+            <!-- Match Versus Preview Display with Real Country Flags -->
+            <div id="wc-match-preview" class="w-full max-w-md bg-[#0a2360] border border-blue-400/30 rounded-2xl p-3 my-2 flex items-center justify-between text-xs font-bold text-white shadow-lg">
+                <div id="preview-p1" class="flex items-center gap-2 text-yellow-400">
+                    <div class="w-8 h-6 rounded overflow-hidden border border-white/30 shrink-0 shadow bg-slate-900">
+                        <img id="preview-p1-img" src="https://flagcdn.com/w160/mx.png" alt="Flag" class="w-full h-full object-cover">
+                    </div>
+                    <span id="preview-p1-name" class="font-black uppercase tracking-wide">MEXICO (YOU)</span>
+                </div>
+                <span class="font-teko text-2xl font-black text-yellow-400 italic mx-1">VS</span>
+                <div id="preview-p2" class="flex items-center gap-2 text-cyan-400 flex-row-reverse">
+                    <div class="w-8 h-6 rounded overflow-hidden border border-white/30 shrink-0 shadow bg-slate-900">
+                        <img id="preview-p2-img" src="https://flagcdn.com/w160/za.png" alt="Flag" class="w-full h-full object-cover">
+                    </div>
+                    <span id="preview-p2-name" class="font-black uppercase tracking-wide">SOUTH AFRICA (VERY HARD AI)</span>
+                </div>
+            </div>
+
+            <!-- Bottom Action Bar -->
+            <div class="w-full max-w-md flex items-center gap-3 mb-2 px-2">
+                <button onclick="startWorldCupMatch()" class="w-full bg-[#8fa347] hover:bg-[#a1b852] active:scale-98 text-slate-950 font-black py-4 rounded-2xl text-lg tracking-wider uppercase shadow-xl transition-all border-t border-lime-200">
+                    START WORLD CUP
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Over Modal with Real Flag Badges -->
+        <div id="game-over-modal" class="absolute inset-0 z-40 flex flex-col justify-center items-center p-6 bg-slate-950/90 backdrop-blur-xl hidden">
+            <div class="text-center max-w-md mx-auto glass-panel p-8 rounded-3xl border-yellow-400/40">
+                <div id="win-trophy" class="text-7xl mb-2">🏆</div>
+                <h2 id="win-title" class="font-teko text-6xl md:text-7xl font-black text-yellow-400 tracking-wide uppercase leading-none mb-1">
+                    VICTORY!
+                </h2>
+                <p id="win-subtitle" class="text-gray-300 font-bold text-sm uppercase tracking-wider mb-6">
+                    MATCH CONCLUDED
+                </p>
+
+                <div class="glass-panel p-4 rounded-2xl mb-6 flex justify-around items-center">
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 rounded-full border-2 border-yellow-400 overflow-hidden shadow-md mb-1 bg-slate-900">
+                            <img id="res-p1-flag" src="https://flagcdn.com/w160/mx.png" class="w-full h-full object-cover" alt="Team 1 Flag">
+                        </div>
+                        <div id="res-p1-label" class="text-xs font-bold text-yellow-400">MEXICO</div>
+                        <div id="res-p1-score" class="font-teko text-5xl font-black text-white">3</div>
+                    </div>
+                    <div class="font-teko text-3xl font-light text-gray-500">-</div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 rounded-full border-2 border-cyan-400 overflow-hidden shadow-md mb-1 bg-slate-900">
+                            <img id="res-p2-flag" src="https://flagcdn.com/w160/za.png" class="w-full h-full object-cover" alt="Team 2 Flag">
+                        </div>
+                        <div id="res-p2-label" class="text-xs font-bold text-cyan-400">SOUTH AFRICA</div>
+                        <div id="res-p2-score" class="font-teko text-5xl font-black text-white">1</div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button class="btn-gold w-full py-3.5 rounded-2xl text-base tracking-wider font-black uppercase" onclick="restartMatch()">
+                        Play Again 🔄
+                    </button>
+                    <button class="glass-panel w-full py-3 rounded-2xl text-sm font-bold text-gray-300 hover:text-white uppercase" onclick="openMenu()">
+                        Main Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TableAudio {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playKick(power = 1) {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(220 * power, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.12);
+            }
+
+            playPuckHit() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.08);
+            }
+
+            playWallBounce() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.06);
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.06);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.06);
+            }
+
+            playGoalCheer() {
+                if (!this.ctx) return;
+                const bufferSize = this.ctx.sampleRate * 1.2;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass'; filter.frequency.value = 1000;
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.01, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.6, this.ctx.currentTime + 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.2);
+                noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+                noise.start();
+            }
+        }
+
+        const soundEngine = new TableAudio();
+
+        class Vec2 {
+            constructor(x = 0, y = 0) {
+                this.x = x; this.y = y;
+            }
+            set(x, y) { this.x = x; this.y = y; return this; }
+            copy(v) { this.x = v.x; this.y = v.y; return this; }
+            clone() { return new Vec2(this.x, this.y); }
+            add(v) { this.x += v.x; this.y += v.y; return this; }
+            sub(v) { this.x -= v.x; this.y -= v.y; return this; }
+            mult(n) { this.x *= n; this.y *= n; return this; }
+            div(n) { this.x /= n; this.y /= n; return this; }
+            mag() { return Math.sqrt(this.x * this.x + this.y * this.y); }
+            normalize() { const m = this.mag(); if (m !== 0) this.div(m); return this; }
+            dist(v) { return Math.sqrt((this.x - v.x) ** 2 + (this.y - v.y) ** 2); }
+            dot(v) { return this.x * v.x + this.y * v.y; }
+        }
+
+        const groupsData = [
+            {
+                name: "GROUP A",
+                teams: [
+                    { name: "MEXICO", code: "mx", badge: "H", bg: "bg-red-500" },
+                    { name: "SOUTH AFRICA", code: "za", badge: "L", bg: "bg-purple-500" },
+                    { name: "SOUTH KOREA", code: "kr", badge: "H", bg: "bg-red-500" },
+                    { name: "CZECHIA", code: "cz", badge: "H", bg: "bg-red-500" }
+                ]
+            },
+            {
+                name: "GROUP B",
+                teams: [
+                    { name: "CANADA", code: "ca", badge: "H", bg: "bg-red-500" },
+                    { name: "BOSNIA & H.", code: "ba", badge: "H", bg: "bg-red-500" },
+                    { name: "QATAR", code: "qa", badge: "L", bg: "bg-purple-500" },
+                    { name: "SWITZERLAND", code: "ch", badge: "N", bg: "bg-amber-500" }
+                ]
+            },
+            {
+                name: "GROUP C",
+                teams: [
+                    { name: "BRAZIL", code: "br", badge: "E", bg: "bg-emerald-500" },
+                    { name: "MOROCCO", code: "ma", badge: "N", bg: "bg-amber-500" },
+                    { name: "HAITI", code: "ht", badge: "L", bg: "bg-purple-500" },
+                    { name: "SCOTLAND", code: "gb-sct", badge: "N", bg: "bg-amber-500" }
+                ]
+            },
+            {
+                name: "GROUP D",
+                teams: [
+                    { name: "USA", code: "us", badge: "N", bg: "bg-amber-500" },
+                    { name: "PARAGUAY", code: "py", badge: "H", bg: "bg-red-500" },
+                    { name: "AUSTRALIA", code: "au", badge: "H", bg: "bg-red-500" },
+                    { name: "TURKEY", code: "tr", badge: "N", bg: "bg-amber-500" }
+                ]
+            },
+            {
+                name: "GROUP E",
+                teams: [
+                    { name: "ARGENTINA", code: "ar", badge: "E", bg: "bg-emerald-500" },
+                    { name: "FRANCE", code: "fr", badge: "E", bg: "bg-emerald-500" },
+                    { name: "JAPAN", code: "jp", badge: "H", bg: "bg-red-500" },
+                    { name: "SENEGAL", code: "sn", badge: "N", bg: "bg-amber-500" }
+                ]
+            },
+            {
+                name: "GROUP F",
+                teams: [
+                    { name: "GERMANY", code: "de", badge: "E", bg: "bg-emerald-500" },
+                    { name: "ENGLAND", code: "gb-eng", badge: "E", bg: "bg-emerald-500" },
+                    { name: "SPAIN", code: "es", badge: "E", bg: "bg-emerald-500" },
+                    { name: "PORTUGAL", code: "pt", badge: "E", bg: "bg-emerald-500" }
+                ]
+            },
+            {
+                name: "GROUP G",
+                teams: [
+                    { name: "NETHERLANDS", code: "nl", badge: "E", bg: "bg-emerald-500" },
+                    { name: "BELGIUM", code: "be", badge: "E", bg: "bg-emerald-500" },
+                    { name: "CROATIA", code: "hr", badge: "H", bg: "bg-red-500" },
+                    { name: "URUGUAY", code: "uy", badge: "H", bg: "bg-red-500" }
+                ]
+            },
+            {
+                name: "GROUP H",
+                teams: [
+                    { name: "ITALY", code: "it", badge: "E", bg: "bg-emerald-500" },
+                    { name: "COLOMBIA", code: "co", badge: "H", bg: "bg-red-500" },
+                    { name: "NIGERIA", code: "ng", badge: "N", bg: "bg-amber-500" },
+                    { name: "EGYPT", code: "eg", badge: "N", bg: "bg-amber-500" }
+                ]
+            }
+        ];
+
+        let canvas, ctx;
+        let gameMode = 'wc';
+        let p1Skin = 'mx';
+        let p2Skin = 'za';
+
+        const pitch = { x: 0, y: 0, w: 0, h: 0, goalY1: 0, goalY2: 0, goalDepth: 0 };
+        let pucks = [];
+        let ball = null;
+        let selectedPuck = null;
+        let isAiming = false;
+        let dragStart = new Vec2();
+        let dragCurrent = new Vec2();
+        let isPhysicsActive = false;
+        let isGoalProcessing = false;
+        let activeTurn = 1;
+        let scoreP1 = 0;
+        let scoreP2 = 0;
+        let turnTimerInterval = null;
+        let turnTimeLeft = 15;
+        let matchTimerInterval = null;
+        let matchTimeLeft = 1200; // 20 minutes (1200 seconds)
+        let particles = [];
+
+        let isAiThinking = false;
+        let aiTimeout = null;
+
+        let currentGroupIdx = 0;
+        let selectedNation1 = groupsData[0].teams[0];
+        let selectedNation2 = groupsData[0].teams[1];
+
+        function openNationSelect() {
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('nation-select-menu').classList.remove('hidden');
+            renderGroupUI();
+            updateMatchPreview();
+        }
+
+        function prevGroup() {
+            currentGroupIdx = (currentGroupIdx - 1 + groupsData.length) % groupsData.length;
+            renderGroupUI();
+        }
+
+        function nextGroup() {
+            currentGroupIdx = (currentGroupIdx + 1) % groupsData.length;
+            renderGroupUI();
+        }
+
+        function shuffleGroups() {
+            const randomGroup = groupsData[Math.floor(Math.random() * groupsData.length)];
+            const t1Idx = Math.floor(Math.random() * randomGroup.teams.length);
+            let t2Idx = Math.floor(Math.random() * randomGroup.teams.length);
+            while (t2Idx === t1Idx) {
+                t2Idx = Math.floor(Math.random() * randomGroup.teams.length);
+            }
+            selectedNation1 = randomGroup.teams[t1Idx];
+            selectedNation2 = randomGroup.teams[t2Idx];
+            currentGroupIdx = groupsData.indexOf(randomGroup);
+            renderGroupUI();
+            updateMatchPreview();
+        }
+
+        let activeSelectSlot = 1;
+
+        function selectNation(team) {
+            if (selectedNation1 && selectedNation1.name === team.name) {
+                activeSelectSlot = 2;
+            } else if (selectedNation2 && selectedNation2.name === team.name) {
+                activeSelectSlot = 1;
+            } else {
+                if (activeSelectSlot === 1) {
+                    selectedNation1 = team;
+                    activeSelectSlot = 2;
+                } else {
+                    selectedNation2 = team;
+                    activeSelectSlot = 1;
+                }
+            }
+            renderGroupUI();
+            updateMatchPreview();
+        }
+
+        function renderGroupUI() {
+            const group = groupsData[currentGroupIdx];
+            const titleEl = document.getElementById('group-title');
+            if (titleEl) titleEl.innerText = group.name;
+
+            const grid = document.getElementById('nation-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            group.teams.forEach(team => {
+                const isP1 = selectedNation1 && selectedNation1.name === team.name;
+                const isP2 = selectedNation2 && selectedNation2.name === team.name;
+
+                let borderClass = 'border-slate-700 bg-slate-900/80 hover:bg-slate-800';
+                let badgeText = '';
+                let badgeColor = '';
+
+                if (isP1) {
+                    borderClass = 'border-2 border-yellow-400 bg-yellow-950/40 shadow-lg shadow-yellow-500/20 active-turn-glow';
+                    badgeText = 'TEAM 1 (YOU)';
+                    badgeColor = 'bg-yellow-400 text-slate-950';
+                } else if (isP2) {
+                    borderClass = 'border-2 border-cyan-400 bg-cyan-950/40 shadow-lg shadow-cyan-500/20';
+                    badgeText = 'TEAM 2 (AI)';
+                    badgeColor = 'bg-cyan-400 text-slate-950';
+                }
+
+                const card = document.createElement('div');
+                card.className = `p-3 rounded-2xl border cursor-pointer transition-all flex flex-col items-center justify-center relative ${borderClass}`;
+                card.onclick = () => selectNation(team);
+
+                card.innerHTML = `
+                    ${badgeText ? `<span class="absolute -top-2 px-2 py-0.5 rounded-full text-[9px] font-black tracking-widest ${badgeColor}">${badgeText}</span>` : ''}
+                    <div class="w-12 h-9 rounded overflow-hidden border border-white/20 shadow-md my-1 bg-slate-950">
+                        <img src="${getFlagUrl(team.code)}" alt="${team.name}" class="w-full h-full object-cover">
+                    </div>
+                    <span class="text-xs font-black text-white tracking-wider uppercase text-center mt-1">${team.name}</span>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateMatchPreview() {
+            if (selectedNation1) {
+                const p1Name = document.getElementById('preview-p1-name');
+                const p1Img = document.getElementById('preview-p1-img');
+                if (p1Name) p1Name.innerText = `${selectedNation1.name} (YOU)`;
+                if (p1Img) p1Img.src = getFlagUrl(selectedNation1.code);
+            }
+            if (selectedNation2) {
+                const p2Name = document.getElementById('preview-p2-name');
+                const p2Img = document.getElementById('preview-p2-img');
+                if (p2Name) p2Name.innerText = `${selectedNation2.name} (VERY HARD AI)`;
+                if (p2Img) p2Img.src = getFlagUrl(selectedNation2.code);
+            }
+        }
+
+        function updateScoreboard() {
+            const s1 = document.getElementById('score-p1');
+            const s2 = document.getElementById('score-p2');
+            if (s1) s1.innerText = scoreP1;
+            if (s2) s2.innerText = scoreP2;
+        }
+
+        function updateTurnUI() {
+            const p1Card = document.getElementById('p1-card');
+            const p2Card = document.getElementById('p2-card');
+            const turnGuide = document.getElementById('turn-guide-text');
+
+            if (activeTurn === 1) {
+                if (p1Card) p1Card.classList.add('active-turn-glow');
+                if (p2Card) p2Card.classList.remove('active-turn-glow');
+                if (turnGuide) turnGuide.innerText = "DRAG PUCK BACK & RELEASE TO SHOOT";
+            } else {
+                if (p1Card) p1Card.classList.remove('active-turn-glow');
+                if (p2Card) p2Card.classList.add('active-turn-glow');
+                if (turnGuide) turnGuide.innerText = "VERY HARD AI THINKING...";
+            }
+        }
+
+        function resetTurnTimer() {
+            if (turnTimerInterval) clearInterval(turnTimerInterval);
+            turnTimeLeft = 15;
+            const timerText = document.getElementById('timer-text');
+            if (timerText) timerText.innerText = `TURN: ${turnTimeLeft}s`;
+
+            turnTimerInterval = setInterval(() => {
+                if (!isPhysicsActive && !isGoalProcessing) {
+                    turnTimeLeft--;
+                    if (timerText) timerText.innerText = `TURN: ${turnTimeLeft}s`;
+                    if (turnTimeLeft <= 0) {
+                        clearInterval(turnTimerInterval);
+                        switchTurn();
+                    }
+                }
+            }, 1000);
+        }
+
+        function formatMatchTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function startMatchTimer() {
+            if (matchTimerInterval) clearInterval(matchTimerInterval);
+            matchTimeLeft = 1200; // 20 minutes countdown
+            const clockEl = document.getElementById('match-clock-text');
+            if (clockEl) clockEl.innerText = formatMatchTime(matchTimeLeft);
+
+            matchTimerInterval = setInterval(() => {
+                if (!isGoalProcessing) {
+                    if (matchTimeLeft > 0) {
+                        matchTimeLeft--;
+                        if (clockEl) clockEl.innerText = formatMatchTime(matchTimeLeft);
+                        if (matchTimeLeft <= 0) {
+                            clearInterval(matchTimerInterval);
+                            endMatch();
+                        }
+                    }
+                }
+            }, 1000);
+        }
+
+        function getFlagUrl(code) {
+            if (!code) return 'https://flagcdn.com/w160/un.png';
+            return `https://flagcdn.com/w160/${code.toLowerCase()}.png`;
+        }
+
+        const flagImgCache = {};
+        function getFlagImage(code) {
+            if (!code) return null;
+            const cleanCode = code.toLowerCase();
+            if (!flagImgCache[cleanCode]) {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.src = getFlagUrl(cleanCode);
+                flagImgCache[cleanCode] = img;
+            }
+            return flagImgCache[cleanCode];
+        }
+
+        class CircleEntity {
+            constructor(x, y, radius, mass, isBall = false, team = 0, skin = 'mx') {
+                this.pos = new Vec2(x, y);
+                this.vel = new Vec2(0, 0);
+                this.radius = radius;
+                this.mass = mass;
+                this.isBall = isBall;
+                this.team = team;
+                this.skin = skin;
+                this.flagImg = getFlagImage(this.skin);
+            }
+
+            update() {
+                const friction = this.isBall ? 0.985 : 0.975;
+                this.vel.mult(friction);
+
+                if (this.vel.mag() < 0.08) {
+                    this.vel.set(0, 0);
+                }
+
+                this.pos.add(this.vel);
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.pos.x, this.pos.y);
+
+                if (this.isBall) {
+                    ctx.save();
+                    const spinAngle = (this.pos.x + this.pos.y) * 0.05;
+                    ctx.rotate(spinAngle);
+
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fill();
+
+                    ctx.fillStyle = '#1e293b';
+                    ctx.strokeStyle = '#0f172a';
+                    ctx.lineWidth = Math.max(1, this.radius * 0.08);
+
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i * 72 - 18) * (Math.PI / 180);
+                        const px = Math.cos(angle) * (this.radius * 0.38);
+                        const py = Math.sin(angle) * (this.radius * 0.38);
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i * 72 - 18) * (Math.PI / 180);
+                        const px = Math.cos(angle) * (this.radius * 0.38);
+                        const py = Math.sin(angle) * (this.radius * 0.38);
+
+                        const outerAngle = angle;
+                        const opx = Math.cos(outerAngle) * (this.radius * 0.88);
+                        const opy = Math.sin(outerAngle) * (this.radius * 0.88);
+
+                        ctx.beginPath();
+                        ctx.moveTo(px, py);
+                        ctx.lineTo(opx, opy);
+                        ctx.stroke();
+
+                        const patchAngle1 = (i * 72 - 18 - 25) * (Math.PI / 180);
+                        const patchAngle2 = (i * 72 - 18 + 25) * (Math.PI / 180);
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.radius * 0.95, patchAngle1, patchAngle2);
+                        ctx.lineTo(opx, opy);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#020617';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+
+                    ctx.restore();
+
+                    const sphereGlow = ctx.createRadialGradient(
+                        -this.radius * 0.3, -this.radius * 0.3, this.radius * 0.1,
+                        0, 0, this.radius
+                    );
+                    sphereGlow.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+                    sphereGlow.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+                    sphereGlow.addColorStop(1, 'rgba(0, 0, 0, 0.35)');
+
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = sphereGlow;
+                    ctx.fill();
+                } else {
+                    // Outer Metallic Ring Frame
+                    const outerGradient = ctx.createRadialGradient(0, 0, this.radius * 0.6, 0, 0, this.radius);
+                    outerGradient.addColorStop(0, '#e2e8f0');
+                    outerGradient.addColorStop(0.8, '#64748b');
+                    outerGradient.addColorStop(1, '#0f172a');
+
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = outerGradient;
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                    ctx.stroke();
+
+                    // Render Real Country Flag image on puck surface
+                    const img = this.flagImg || getFlagImage(this.skin);
+                    if (img && img.complete && img.naturalWidth > 0) {
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.radius * 0.74, 0, Math.PI * 2);
+                        ctx.clip();
+                        ctx.drawImage(img, -this.radius * 0.74, -this.radius * 0.74, this.radius * 1.48, this.radius * 1.48);
+                        ctx.restore();
+                    } else {
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.radius * 0.74, 0, Math.PI * 2);
+                        ctx.fillStyle = this.team === 1 ? '#0284c7' : '#dc2626';
+                        ctx.fill();
+                    }
+
+                    // Metallic Inner Bevel Edge
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.radius * 0.74, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.35)';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+
+                    // Active turn ring glow if selected
+                    if (this === selectedPuck && isAiming) {
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.radius + 6, 0, Math.PI * 2);
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                    }
+                }
+
+                ctx.restore();
+            }
+        }
+
+        function initCanvas() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            setupInputListeners();
+        }
+
+        function resizeCanvas() {
+            const padding = 20;
+            const maxWidth = window.innerWidth - padding * 2;
+            const maxHeight = window.innerHeight - padding * 2;
+
+            let w = maxWidth;
+            let h = w * (9 / 16);
+
+            if (h > maxHeight) {
+                h = maxHeight;
+                w = h * (16 / 9);
+            }
+
+            canvas.width = Math.floor(w);
+            canvas.height = Math.floor(h);
+
+            const border = canvas.width * 0.04;
+            pitch.x = border;
+            pitch.y = border;
+            pitch.w = canvas.width - border * 2;
+            pitch.h = canvas.height - border * 2;
+
+            pitch.goalY1 = pitch.y + pitch.h * 0.32;
+            pitch.goalY2 = pitch.y + pitch.h * 0.68;
+            pitch.goalDepth = border * 0.85;
+
+            if (pucks.length === 0) {
+                resetFieldPositions();
+            }
+        }
+
+        function resetFieldPositions() {
+            pucks = [];
+            // Adjusted puck radius to fit 10 players per team comfortably on pitch
+            const r = pitch.h * 0.042;
+            const ballR = r * 0.6;
+
+            ball = new CircleEntity(pitch.x + pitch.w / 2, pitch.y + pitch.h / 2, ballR, 0.8, true, 0);
+
+            // 10-Player Tactical Formations (1 GK, 3 Defenders, 3 Midfielders, 3 Forwards)
+            const defaultFormation = {
+                p1: [
+                    {x:0.06, y:0.5},                                    // Goalkeeper
+                    {x:0.16, y:0.22}, {x:0.15, y:0.5}, {x:0.16, y:0.78}, // Defenders
+                    {x:0.28, y:0.18}, {x:0.27, y:0.5}, {x:0.28, y:0.82}, // Midfielders
+                    {x:0.40, y:0.25}, {x:0.42, y:0.5}, {x:0.40, y:0.75}  // Forwards
+                ],
+                p2: [
+                    {x:0.94, y:0.5},                                    // Goalkeeper
+                    {x:0.84, y:0.22}, {x:0.85, y:0.5}, {x:0.84, y:0.78}, // Defenders
+                    {x:0.72, y:0.18}, {x:0.73, y:0.5}, {x:0.72, y:0.82}, // Midfielders
+                    {x:0.60, y:0.25}, {x:0.58, y:0.5}, {x:0.60, y:0.75}  // Forwards
+                ]
+            };
+
+            // Team 1 Pucks (Left side - 10 Players)
+            defaultFormation.p1.forEach(pos => {
+                const px = pitch.x + pos.x * pitch.w;
+                const py = pitch.y + pos.y * pitch.h;
+                pucks.push(new CircleEntity(px, py, r, 2.0, false, 1, p1Skin));
+            });
+
+            // Team 2 Pucks (Right side - 10 Players)
+            defaultFormation.p2.forEach(pos => {
+                const px = pitch.x + pos.x * pitch.w;
+                const py = pitch.y + pos.y * pitch.h;
+                pucks.push(new CircleEntity(px, py, r, 2.0, false, 2, p2Skin));
+            });
+        }
+
+        function setupInputListeners() {
+            function getCanvasPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return new Vec2(clientX - rect.left, clientY - rect.top);
+            }
+
+            function handleStart(pos) {
+                if (isPhysicsActive || activeTurn === 2 || isAiThinking) return;
+                soundEngine.init();
+
+                for (let puck of pucks) {
+                    if (puck.team === activeTurn && pos.dist(puck.pos) <= puck.radius * 1.5) {
+                        selectedPuck = puck;
+                        isAiming = true;
+                        dragStart.copy(puck.pos);
+                        dragCurrent.copy(pos);
+                        break;
+                    }
+                }
+            }
+
+            function handleMove(pos) {
+                if (isAiming && selectedPuck) {
+                    dragCurrent.copy(pos);
+                }
+            }
+
+            function handleEnd() {
+                if (isAiming && selectedPuck) {
+                    const dragVec = Vec2.prototype.sub.call(dragStart.clone(), dragCurrent);
+                    const power = Math.min(dragVec.mag(), 140);
+
+                    if (power > 12) {
+                        const launchVel = dragVec.normalize().mult(power * 0.22);
+                        selectedPuck.vel.copy(launchVel);
+                        isPhysicsActive = true;
+                        soundEngine.playKick(power / 100);
+                        resetTurnTimer();
+                    }
+
+                    isAiming = false;
+                    selectedPuck = null;
+                }
+            }
+
+            canvas.addEventListener('mousedown', e => handleStart(getCanvasPos(e)));
+            window.addEventListener('mousemove', e => handleMove(getCanvasPos(e)));
+            window.addEventListener('mouseup', handleEnd);
+
+            canvas.addEventListener('touchstart', e => handleStart(getCanvasPos(e)), { passive: true });
+            window.addEventListener('touchmove', e => handleMove(getCanvasPos(e)), { passive: true });
+            window.addEventListener('touchend', handleEnd);
+        }
+
+        function updatePhysics() {
+            let allEntities = [ball, ...pucks];
+            let isMoving = false;
+
+            allEntities.forEach(ent => ent.update());
+
+            for (let i = 0; i < allEntities.length; i++) {
+                for (let j = i + 1; j < allEntities.length; j++) {
+                    const a = allEntities[i];
+                    const b = allEntities[j];
+
+                    const dist = a.pos.dist(b.pos);
+                    const minDist = a.radius + b.radius;
+
+                    if (dist < minDist) {
+                        const normal = Vec2.prototype.sub.call(b.pos.clone(), a.pos).normalize();
+                        const overlap = minDist - dist;
+                        a.pos.sub(normal.clone().mult(overlap * 0.5));
+                        b.pos.add(normal.clone().mult(overlap * 0.5));
+
+                        const relativeVel = Vec2.prototype.sub.call(b.vel.clone(), a.vel);
+                        const velAlongNormal = relativeVel.dot(normal);
+
+                        if (velAlongNormal < 0) {
+                            const restitution = 0.88;
+                            const impulseMag = -(1 + restitution) * velAlongNormal / (1 / a.mass + 1 / b.mass);
+                            const impulse = normal.clone().mult(impulseMag);
+
+                            a.vel.sub(impulse.clone().div(a.mass));
+                            b.vel.add(impulse.clone().div(b.mass));
+
+                            soundEngine.playPuckHit();
+                            createSparks((a.pos.x + b.pos.x) / 2, (a.pos.y + b.pos.y) / 2);
+                        }
+                    }
+                }
+            }
+
+            allEntities.forEach(ent => {
+                const inGoalY = ent.pos.y >= pitch.goalY1 && ent.pos.y <= pitch.goalY2;
+
+                if (ent.pos.x - ent.radius < pitch.x) {
+                    if (inGoalY) {
+                        if (ent.pos.x - ent.radius < pitch.x - pitch.goalDepth) {
+                            ent.pos.x = pitch.x - pitch.goalDepth + ent.radius;
+                            ent.vel.x *= -0.4;
+                        }
+                        if (ent.isBall && ent.pos.x < pitch.x - ent.radius * 0.4) {
+                            handleGoalScored(2);
+                        }
+                    } else {
+                        ent.pos.x = pitch.x + ent.radius;
+                        ent.vel.x *= -0.8;
+                        soundEngine.playWallBounce();
+                    }
+                }
+
+                if (ent.pos.x + ent.radius > pitch.x + pitch.w) {
+                    if (inGoalY) {
+                        if (ent.pos.x + ent.radius > pitch.x + pitch.w + pitch.goalDepth) {
+                            ent.pos.x = pitch.x + pitch.w + pitch.goalDepth - ent.radius;
+                            ent.vel.x *= -0.4;
+                        }
+                        if (ent.isBall && ent.pos.x > pitch.x + pitch.w + ent.radius * 0.4) {
+                            handleGoalScored(1);
+                        }
+                    } else {
+                        ent.pos.x = pitch.x + pitch.w - ent.radius;
+                        ent.vel.x *= -0.8;
+                        soundEngine.playWallBounce();
+                    }
+                }
+
+                if (ent.pos.y - ent.radius < pitch.y) {
+                    ent.pos.y = pitch.y + ent.radius;
+                    ent.vel.y *= -0.8;
+                    soundEngine.playWallBounce();
+                }
+                if (ent.pos.y + ent.radius > pitch.y + pitch.h) {
+                    ent.pos.y = pitch.y + pitch.h - ent.radius;
+                    ent.vel.y *= -0.8;
+                    soundEngine.playWallBounce();
+                }
+
+                const posts = [
+                    new Vec2(pitch.x, pitch.goalY1),
+                    new Vec2(pitch.x, pitch.goalY2),
+                    new Vec2(pitch.x + pitch.w, pitch.goalY1),
+                    new Vec2(pitch.x + pitch.w, pitch.goalY2)
+                ];
+
+                posts.forEach(post => {
+                    if (ent.pos.dist(post) < ent.radius + 6) {
+                        const normal = Vec2.prototype.sub.call(ent.pos.clone(), post).normalize();
+                        ent.pos.copy(post.clone().add(normal.mult(ent.radius + 6)));
+                        ent.vel.mult(-0.7);
+                        soundEngine.playWallBounce();
+                    }
+                });
+
+                if (ent.vel.mag() > 0) isMoving = true;
+            });
+
+            if (isPhysicsActive && !isMoving) {
+                isPhysicsActive = false;
+                switchTurn();
+            }
+        }
+
+        function handleGoalScored(scoringPlayer) {
+            if (isGoalProcessing) return;
+            isGoalProcessing = true;
+
+            if (scoringPlayer === 1) scoreP1 += 1;
+            else scoreP2 += 1;
+
+            updateScoreboard();
+            soundEngine.playGoalCheer();
+
+            const scoringTeamName = scoringPlayer === 1 ? selectedNation1.name : selectedNation2.name;
+            showGoalBanner(`GOAL!`, `${scoringTeamName} SCORED!`);
+
+            // Pure 20-minute timed game: field resets after goal until 20:00 runs out
+            setTimeout(() => {
+                resetFieldPositions();
+                isGoalProcessing = false;
+                switchTurn();
+            }, 2200);
+        }
+
+        function switchTurn() {
+            if (isGoalProcessing) return;
+            activeTurn = activeTurn === 1 ? 2 : 1;
+            updateTurnUI();
+            resetTurnTimer();
+
+            if (activeTurn === 2 && !isPhysicsActive) {
+                triggerAiTurn();
+            }
+        }
+
+        function triggerAiTurn() {
+            if (activeTurn !== 2 || isPhysicsActive || isGoalProcessing) return;
+            isAiThinking = true;
+
+            if (aiTimeout) clearTimeout(aiTimeout);
+
+            aiTimeout = setTimeout(() => {
+                if (activeTurn !== 2 || isPhysicsActive || isGoalProcessing) {
+                    isAiThinking = false;
+                    return;
+                }
+                performAiShot();
+            }, 600);
+        }
+
+        function performAiShot() {
+            if (isGoalProcessing) {
+                isAiThinking = false;
+                return;
+            }
+            const aiPucks = pucks.filter(p => p.team === 2);
+            if (aiPucks.length === 0 || !ball) {
+                isAiThinking = false;
+                return;
+            }
+
+            const candidates = [];
+            const targetX = pitch.x; // Left goal for Team 2 to attack
+            const goalPadding = ball.radius + 2;
+            const goalYMin = pitch.goalY1 + goalPadding;
+            const goalYMax = pitch.goalY2 - goalPadding;
+
+            // Helper function to check path blockage
+            function isPathBlocked(p1, p2, ignoreP1 = null, ignoreP2 = null, margin = 4) {
+                const segVec = p2.clone().sub(p1);
+                const segLen = segVec.mag();
+                if (segLen === 0) return false;
+                const segDir = segVec.clone().normalize();
+
+                const allObstacles = [...pucks, ball];
+                for (let obs of allObstacles) {
+                    if (obs === ignoreP1 || obs === ignoreP2) continue;
+                    const toObs = obs.pos.clone().sub(p1);
+                    const proj = toObs.dot(segDir);
+                    if (proj > 2 && proj < segLen - 2) {
+                        const closestPt = p1.clone().add(segDir.clone().mult(proj));
+                        if (closestPt.dist(obs.pos) < obs.radius + margin) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            // 1. Direct Goal Shots (High precision: 31 target points along opponent goal)
+            const steps = 30;
+            for (let i = 0; i <= steps; i++) {
+                const targetY = goalYMin + (goalYMax - goalYMin) * (i / steps);
+                const target = new Vec2(targetX, targetY);
+
+                const ballToGoal = target.clone().sub(ball.pos);
+                const distBallToGoal = ballToGoal.mag();
+                const ballDir = ballToGoal.clone().normalize();
+
+                const ballPathBlocked = isPathBlocked(ball.pos, target, ball, null, 5);
+
+                // Aiming for corner posts gives highest goal likelihood
+                const isCorner = (i < 4 || i > steps - 4);
+                const cornerBonus = isCorner ? 3500 : 1500;
+
+                aiPucks.forEach(puck => {
+                    const impactDist = ball.radius + puck.radius;
+                    const idealImpactPos = ball.pos.clone().sub(ballDir.clone().mult(impactDist));
+
+                    const puckToImpact = idealImpactPos.clone().sub(puck.pos);
+                    const distPuckToImpact = puckToImpact.mag();
+                    const puckDir = puckToImpact.clone().normalize();
+
+                    const alignment = puckDir.dot(ballDir);
+                    const puckPathBlocked = isPathBlocked(puck.pos, idealImpactPos, puck, ball, 5);
+
+                    if (alignment > 0.15 && !puckPathBlocked) {
+                        let score = 8000 + (alignment * 4000) + cornerBonus - (distPuckToImpact * 0.3) - (distBallToGoal * 0.2);
+                        if (ballPathBlocked) score -= 3500;
+
+                        const totalDist = distPuckToImpact + distBallToGoal;
+                        const requiredPower = Math.min(Math.max((totalDist * 0.38) + 35, 45), 140);
+
+                        candidates.push({ puck, dir: puckDir, power: requiredPower, score, type: 'DIRECT' });
+                    }
+                });
+            }
+
+            // 2. Bank Shots (Bounce off Top / Bottom Wall into Goal)
+            const wallYTop = pitch.y + ball.radius;
+            const wallYBottom = pitch.y + pitch.h - ball.radius;
+            const walls = [wallYTop, wallYBottom];
+
+            walls.forEach(wallY => {
+                for (let i = 0; i <= 15; i++) {
+                    const targetY = goalYMin + (goalYMax - goalYMin) * (i / 15);
+                    const mirroredGoalY = wallY + (wallY - targetY);
+                    const mirroredGoal = new Vec2(targetX, mirroredGoalY);
+
+                    const ballToMirrored = mirroredGoal.clone().sub(ball.pos);
+                    const ballDir = ballToMirrored.clone().normalize();
+
+                    if (Math.abs(ballDir.y) > 0.05) {
+                        const t = (wallY - ball.pos.y) / ballDir.y;
+                        if (t > 0) {
+                            const bounceX = ball.pos.x + ballDir.x * t;
+                            if (bounceX > pitch.x + 10 && bounceX < pitch.x + pitch.w - 10) {
+                                const bouncePt = new Vec2(bounceX, wallY);
+
+                                const path1Blocked = isPathBlocked(ball.pos, bouncePt, ball, null, 4);
+                                const path2Blocked = isPathBlocked(bouncePt, new Vec2(targetX, targetY), null, null, 4);
+
+                                aiPucks.forEach(puck => {
+                                    const impactDist = ball.radius + puck.radius;
+                                    const idealImpactPos = ball.pos.clone().sub(ballDir.clone().mult(impactDist));
+                                    const puckToImpact = idealImpactPos.clone().sub(puck.pos);
+                                    const distPuckToImpact = puckToImpact.mag();
+                                    const puckDir = puckToImpact.clone().normalize();
+                                    const alignment = puckDir.dot(ballDir);
+                                    const puckBlocked = isPathBlocked(puck.pos, idealImpactPos, puck, ball, 4);
+
+                                    if (alignment > 0.25 && !puckBlocked) {
+                                        let score = 6500 + (alignment * 3000) - (distPuckToImpact * 0.4);
+                                        if (path1Blocked || path2Blocked) score -= 3000;
+
+                                        const distTotal = distPuckToImpact + ball.pos.dist(bouncePt) + bouncePt.dist(new Vec2(targetX, targetY));
+                                        const requiredPower = Math.min(Math.max((distTotal * 0.42) + 40, 60), 140);
+                                        candidates.push({ puck, dir: puckDir, power: requiredPower, score, type: 'BANK' });
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 3. Defensive Block / Clearance if ball is in AI danger zone
+            const isBallInDangerZone = ball.pos.x > pitch.x + pitch.w * 0.55;
+            aiPucks.forEach(puck => {
+                const puckToBall = ball.pos.clone().sub(puck.pos);
+                const distToBall = puckToBall.mag();
+                const dirToBall = puckToBall.clone().normalize();
+
+                let score = 2000 - distToBall;
+                if (dirToBall.x < 0) score += 1500;
+                if (isBallInDangerZone) score += 2500;
+
+                const power = Math.min(Math.max(distToBall * 0.48 + 40, 55), 140);
+                candidates.push({ puck, dir: dirToBall, power, score, type: 'CLEARANCE' });
+            });
+
+            // Sort candidates by score descending
+            candidates.sort((a, b) => b.score - a.score);
+            const bestShot = candidates[0];
+
+            if (!bestShot) {
+                isAiThinking = false;
+                return;
+            }
+
+            // Natural high-level precision vector
+            const angleJitter = (Math.random() - 0.5) * 0.003;
+            const finalDir = new Vec2(
+                bestShot.dir.x * Math.cos(angleJitter) - bestShot.dir.y * Math.sin(angleJitter),
+                bestShot.dir.x * Math.sin(angleJitter) + bestShot.dir.y * Math.cos(angleJitter)
+            ).normalize();
+
+            const bestPuck = bestShot.puck;
+            const power = bestShot.power;
+
+            selectedPuck = bestPuck;
+            isAiming = true;
+            dragStart.copy(bestPuck.pos);
+            dragCurrent.copy(bestPuck.pos.clone().sub(finalDir.clone().mult(power)));
+
+            setTimeout(() => {
+                if (activeTurn === 2 && !isGoalProcessing) {
+                    const launchVel = finalDir.clone().mult(power * 0.22);
+                    bestPuck.vel.copy(launchVel);
+                    isPhysicsActive = true;
+                    isAiming = false;
+                    selectedPuck = null;
+                    soundEngine.playKick(power / 100);
+                    resetTurnTimer();
+                }
+                isAiThinking = false;
+            }, 250);
+        }
+
+        function startWorldCupMatch() {
+            if (!selectedNation1) {
+                selectedNation1 = groupsData[currentGroupIdx].teams[0];
+            }
+            if (!selectedNation2) {
+                const group = groupsData[currentGroupIdx];
+                const opponents = group.teams.filter(t => t.name !== selectedNation1.name);
+                selectedNation2 = opponents[0] || groupsData[1].teams[0];
+            }
+
+            p1Skin = selectedNation1.code;
+            p2Skin = selectedNation2.code;
+
+            document.getElementById('nation-select-menu').classList.add('hidden');
+            document.getElementById('hud-overlay').classList.remove('hidden');
+
+            document.getElementById('p1-name').innerText = selectedNation1.name;
+            document.getElementById('p2-name').innerText = selectedNation2.name;
+
+            const p1FlagImg = document.getElementById('p1-flag-img');
+            const p2FlagImg = document.getElementById('p2-flag-img');
+            if (p1FlagImg) p1FlagImg.src = getFlagUrl(selectedNation1.code);
+            if (p2FlagImg) p2FlagImg.src = getFlagUrl(selectedNation2.code);
+
+            gameMode = 'wc';
+            scoreP1 = 0; scoreP2 = 0;
+            activeTurn = 1;
+            isGoalProcessing = false;
+
+            updateScoreboard();
+            resetFieldPositions();
+            updateTurnUI();
+            resetTurnTimer();
+            startMatchTimer();
+        }
+
+        function endMatch() {
+            clearInterval(turnTimerInterval);
+            if (matchTimerInterval) clearInterval(matchTimerInterval);
+            isGoalProcessing = false;
+            document.getElementById('hud-overlay').classList.add('hidden');
+            document.getElementById('game-over-modal').classList.remove('hidden');
+
+            const isP1Win = scoreP1 > scoreP2;
+
+            document.getElementById('win-title').innerText = isP1Win ? "VICTORY!" : (scoreP1 === scoreP2 ? "DRAW MATCH!" : "DEFEAT!");
+            document.getElementById('win-subtitle').innerText = isP1Win 
+                ? `${selectedNation1 ? selectedNation1.name : 'TEAM 1'} WON WITH ${scoreP1} GOALS!` 
+                : `${selectedNation2 ? selectedNation2.name : 'TEAM 2'} FINISHED WITH ${scoreP2} GOALS!`;
+
+            document.getElementById('res-p1-label').innerText = selectedNation1 ? selectedNation1.name : "TEAM 1";
+            document.getElementById('res-p2-label').innerText = selectedNation2 ? selectedNation2.name : "TEAM 2";
+
+            const resP1Flag = document.getElementById('res-p1-flag');
+            const resP2Flag = document.getElementById('res-p2-flag');
+            if (resP1Flag && selectedNation1) resP1Flag.src = getFlagUrl(selectedNation1.code);
+            if (resP2Flag && selectedNation2) resP2Flag.src = getFlagUrl(selectedNation2.code);
+
+            document.getElementById('res-p1-score').innerText = scoreP1;
+            document.getElementById('res-p2-score').innerText = scoreP2;
+        }
+
+        function openMenu() {
+            if (aiTimeout) clearTimeout(aiTimeout);
+            isAiThinking = false;
+            clearInterval(turnTimerInterval);
+            if (matchTimerInterval) clearInterval(matchTimerInterval);
+            document.getElementById('game-over-modal').classList.add('hidden');
+            document.getElementById('hud-overlay').classList.add('hidden');
+            document.getElementById('main-menu').classList.remove('hidden');
+        }
+
+        function restartMatch() {
+            document.getElementById('game-over-modal').classList.add('hidden');
+            startWorldCupMatch();
+        }
+
+        function showGoalBanner(text, subtext) {
+            const banner = document.getElementById('status-banner');
+            const bText = document.getElementById('banner-text');
+            const bSub = document.getElementById('banner-subtext');
+            bText.innerText = text;
+            bSub.innerText = subtext;
+            banner.classList.remove('hidden');
+            banner.classList.add('banner-pop');
+            setTimeout(() => {
+                banner.classList.add('hidden');
+                banner.classList.remove('banner-pop');
+            }, 2000);
+        }
+
+        function drawPitch() {
+            ctx.save();
+
+            // 1. Stadium Surround & LED Advertising Boards
+            ctx.fillStyle = '#0a0f1d';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Outer Colorful LED Perimeter Hoarding
+            const ledGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            ledGradient.addColorStop(0, '#facc15');
+            ledGradient.addColorStop(0.25, '#10b981');
+            ledGradient.addColorStop(0.5, '#06b6d4');
+            ledGradient.addColorStop(0.75, '#3b82f6');
+            ledGradient.addColorStop(1, '#ec4899');
+
+            ctx.strokeStyle = ledGradient;
+            ctx.lineWidth = pitch.x * 0.35;
+            ctx.strokeRect(pitch.x * 0.5, pitch.y * 0.5, canvas.width - pitch.x, canvas.height - pitch.y);
+
+            // Outer Turf Shadow
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            ctx.shadowBlur = 25;
+
+            // 2. High-Quality Vibrant Grass Turf Base
+            const turfGradient = ctx.createRadialGradient(
+                pitch.x + pitch.w / 2, pitch.y + pitch.h / 2, pitch.h * 0.1,
+                pitch.x + pitch.w / 2, pitch.y + pitch.h / 2, pitch.w * 0.7
+            );
+            turfGradient.addColorStop(0, '#15803d');  // Vibrant Center Emerald
+            turfGradient.addColorStop(0.5, '#0e6231'); // Rich Lush Green
+            turfGradient.addColorStop(1, '#073e1e');   // Deep Stadium Shadow Turf
+
+            ctx.fillStyle = turfGradient;
+            ctx.fillRect(pitch.x, pitch.y, pitch.w, pitch.h);
+            ctx.shadowBlur = 0; // Reset shadow
+
+            // Vibrant Pitch Lawn Stripes
+            const numStripes = 12;
+            const stripeW = pitch.w / numStripes;
+            for (let i = 0; i < numStripes; i++) {
+                if (i % 2 === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                    ctx.fillRect(pitch.x + i * stripeW, pitch.y, stripeW, pitch.h);
+                } else {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.07)';
+                    ctx.fillRect(pitch.x + i * stripeW, pitch.y, stripeW, pitch.h);
+                }
+            }
+
+            // High-Quality Crisp Field Markings
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.lineWidth = 3.5;
+
+            // Outer Boundary Line
+            ctx.strokeRect(pitch.x, pitch.y, pitch.w, pitch.h);
+
+            // Center Halfway Line
+            ctx.beginPath();
+            ctx.moveTo(pitch.x + pitch.w / 2, pitch.y);
+            ctx.lineTo(pitch.x + pitch.w / 2, pitch.y + pitch.h);
+            ctx.stroke();
+
+            // Center Circle with Vibrant Inner Glow
+            const centerCircleRadius = pitch.h * 0.22;
+            const centerGlow = ctx.createRadialGradient(
+                pitch.x + pitch.w / 2, pitch.y + pitch.h / 2, 0,
+                pitch.x + pitch.w / 2, pitch.y + pitch.h / 2, centerCircleRadius
+            );
+            centerGlow.addColorStop(0, 'rgba(250, 204, 21, 0.12)');
+            centerGlow.addColorStop(0.7, 'rgba(6, 182, 212, 0.08)');
+            centerGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+            ctx.beginPath();
+            ctx.arc(pitch.x + pitch.w / 2, pitch.y + pitch.h / 2, centerCircleRadius, 0, Math.PI * 2);
+            ctx.fillStyle = centerGlow;
+            ctx.fill();
+            ctx.stroke();
+
+            // Center Spot
+            ctx.beginPath();
+            ctx.arc(pitch.x + pitch.w / 2, pitch.y + pitch.h / 2, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // Penalty Areas
+            const penaltyW = pitch.w * 0.16;
+            const penaltyH = pitch.h * 0.54;
+            const penaltyY = pitch.y + (pitch.h - penaltyH) / 2;
+
+            // Left Penalty Area & Arc
+            ctx.strokeRect(pitch.x, penaltyY, penaltyW, penaltyH);
+            ctx.beginPath();
+            ctx.arc(pitch.x + penaltyW * 0.7, pitch.y + pitch.h / 2, pitch.h * 0.12, -Math.PI * 0.35, Math.PI * 0.35);
+            ctx.stroke();
+
+            // Right Penalty Area & Arc
+            ctx.strokeRect(pitch.x + pitch.w - penaltyW, penaltyY, penaltyW, penaltyH);
+            ctx.beginPath();
+            ctx.arc(pitch.x + pitch.w - penaltyW * 0.7, pitch.y + pitch.h / 2, pitch.h * 0.12, Math.PI * 0.65, Math.PI * 1.35);
+            ctx.stroke();
+
+            // Corner Flag Arcs & Colorful Flags
+            const cornerRadius = pitch.h * 0.04;
+            const corners = [
+                { x: pitch.x, y: pitch.y, start: 0, end: Math.PI / 2, color: '#facc15' },
+                { x: pitch.x + pitch.w, y: pitch.y, start: Math.PI / 2, end: Math.PI, color: '#22d3ee' },
+                { x: pitch.x, y: pitch.y + pitch.h, start: -Math.PI / 2, end: 0, color: '#facc15' },
+                { x: pitch.x + pitch.w, y: pitch.y + pitch.h, start: Math.PI, end: -Math.PI / 2, color: '#22d3ee' }
+            ];
+
+            corners.forEach(c => {
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, cornerRadius, c.start, c.end);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = c.color;
+                ctx.fill();
+            });
+
+            // 3. Goal Areas & Detailed High-Quality Mesh Nets
+            const goalH = pitch.goalY2 - pitch.goalY1;
+
+            // Left Goal (Team 1 - Gold / Blue Glow)
+            const g1Gradient = ctx.createLinearGradient(pitch.x - pitch.goalDepth, 0, pitch.x, 0);
+            g1Gradient.addColorStop(0, 'rgba(2, 132, 199, 0.45)');
+            g1Gradient.addColorStop(1, 'rgba(250, 204, 21, 0.15)');
+            ctx.fillStyle = g1Gradient;
+            ctx.fillRect(pitch.x - pitch.goalDepth, pitch.goalY1, pitch.goalDepth, goalH);
+
+            // Left Goal Net Crosshatch Mesh
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+            ctx.lineWidth = 1;
+            for (let y = pitch.goalY1; y <= pitch.goalY2; y += 8) {
+                ctx.beginPath();
+                ctx.moveTo(pitch.x - pitch.goalDepth, y);
+                ctx.lineTo(pitch.x, y);
+                ctx.stroke();
+            }
+            for (let x = pitch.x - pitch.goalDepth; x <= pitch.x; x += 8) {
+                ctx.beginPath();
+                ctx.moveTo(x, pitch.goalY1);
+                ctx.lineTo(x, pitch.goalY2);
+                ctx.stroke();
+            }
+
+            // Left Glowing Goal Frame
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(pitch.x - pitch.goalDepth, pitch.goalY1, pitch.goalDepth, goalH);
+
+            // Right Goal (Team 2 - Neon Cyan / Crimson Glow)
+            const g2Gradient = ctx.createLinearGradient(pitch.x + pitch.w, 0, pitch.x + pitch.w + pitch.goalDepth, 0);
+            g2Gradient.addColorStop(0, 'rgba(236, 72, 153, 0.15)');
+            g2Gradient.addColorStop(1, 'rgba(6, 182, 212, 0.45)');
+            ctx.fillStyle = g2Gradient;
+            ctx.fillRect(pitch.x + pitch.w, pitch.goalY1, pitch.goalDepth, goalH);
+
+            // Right Goal Net Crosshatch Mesh
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+            ctx.lineWidth = 1;
+            for (let y = pitch.goalY1; y <= pitch.goalY2; y += 8) {
+                ctx.beginPath();
+                ctx.moveTo(pitch.x + pitch.w, y);
+                ctx.lineTo(pitch.x + pitch.w + pitch.goalDepth, y);
+                ctx.stroke();
+            }
+            for (let x = pitch.x + pitch.w; x <= pitch.x + pitch.w + pitch.goalDepth; x += 8) {
+                ctx.beginPath();
+                ctx.moveTo(x, pitch.goalY1);
+                ctx.lineTo(x, pitch.goalY2);
+                ctx.stroke();
+            }
+
+            // Right Glowing Goal Frame
+            ctx.strokeStyle = '#22d3ee';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(pitch.x + pitch.w, pitch.goalY1, pitch.goalDepth, goalH);
+
+            // 4. Stadium Corner Floodlight Flares onto Pitch Canvas
+            const lightFlares = [
+                { x: 0, y: 0, color: 'rgba(250, 204, 21, 0.18)' },
+                { x: canvas.width, y: 0, color: 'rgba(34, 211, 238, 0.18)' },
+                { x: 0, y: canvas.height, color: 'rgba(236, 72, 153, 0.15)' },
+                { x: canvas.width, y: canvas.height, color: 'rgba(168, 85, 247, 0.15)' }
+            ];
+
+            lightFlares.forEach(lf => {
+                const flare = ctx.createRadialGradient(lf.x, lf.y, 0, lf.x, lf.y, canvas.height * 0.5);
+                flare.addColorStop(0, lf.color);
+                flare.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = flare;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            });
+
+            ctx.restore();
+        }
+
+        function drawAimTrajectory() {
+            if (!isAiming || !selectedPuck) return;
+
+            ctx.save();
+            const dragVec = Vec2.prototype.sub.call(dragStart.clone(), dragCurrent);
+            const power = Math.min(dragVec.mag(), 140);
+
+            if (power > 10) {
+                const aimDir = dragVec.clone().normalize();
+                const lineLen = power * 2.2;
+                const targetPos = selectedPuck.pos.clone().add(aimDir.clone().mult(lineLen));
+
+                ctx.beginPath();
+                ctx.setLineDash([8, 6]);
+                ctx.moveTo(selectedPuck.pos.x, selectedPuck.pos.y);
+                ctx.lineTo(targetPos.x, targetPos.y);
+                ctx.strokeStyle = selectedPuck.team === 1 ? '#facc15' : '#22d3ee';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.beginPath();
+                ctx.moveTo(selectedPuck.pos.x, selectedPuck.pos.y);
+                ctx.lineTo(dragCurrent.x, dragCurrent.y);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(targetPos.x, targetPos.y, selectedPuck.radius * 0.7, 0, Math.PI * 2);
+                ctx.strokeStyle = selectedPuck.team === 1 ? '#facc15' : '#22d3ee';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function createSparks(x, y) {
+            for (let i = 0; i < 8; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 3 + 1;
+                particles.push({
+                    pos: new Vec2(x, y),
+                    vel: new Vec2(Math.cos(angle) * speed, Math.sin(angle) * speed),
+                    life: 1.0,
+                    color: Math.random() > 0.5 ? '#facc15' : '#ffffff'
+                });
+            }
+        }
+
+        function updateAndDrawParticles() {
+            ctx.save();
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.pos.add(p.vel);
+                p.life -= 0.05;
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.pos.x, p.pos.y, Math.max(1, 3 * p.life), 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            updatePhysics();
+            drawPitch();
+
+            pucks.forEach(puck => puck.draw(ctx));
+            if (ball) ball.draw(ctx);
+
+            drawAimTrajectory();
+            updateAndDrawParticles();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        window.onload = function() {
+            initCanvas();
+            gameLoop();
+        };
+    </script>
+</body>
+</html>
